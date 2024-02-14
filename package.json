@@ -14,12 +14,8 @@
     "papaparse": "^5.4.1",
     "react": "18.2.0",
     "react-native": "0.72.6",
-    "react-native-document-picker": "^9.0.1",
-    "react-native-element-dropdown": "^2.10.0",
-    "react-native-fs": "^2.20.0",
     "react-native-responsive-screen": "^1.4.2",
-    "react-native-wheely": "^0.6.0",
-    "xlsx": "^0.18.5"
+    "react-native-wheely": "^0.6.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

@@ -1,26 +1,27 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import WheelPicker from 'react-native-wheely';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import manycolors from './Utils/manycolors';
 
 const MyComponent = () => {
   // weel selected items
   const [selectShap, setselectShap] = useState(0);
   const [selectD, setselectD] = useState(0);
   const [selectparoty, setselectparoty] = useState(0);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(134);
   const [lessPr, setLessPr] = useState(0);
 
   const [data, setData] = React.useState([]);
 
-  const [input1Text, setInput1Text] = useState('');
-  const [input2Text, setInput2Text] = useState('');
-  const [input3Text, setInput3Text] = useState('');
-  const [input4Text, setInput4Text] = useState('');
+  const [input1Text, setInput1Text] = useState(0);
+  const [input2Text, setInput2Text] = useState(0);
+  const [input3Text, setInput3Text] = useState(0);
+  const [input4Text, setInput4Text] = useState(0);
   const [activeInput, setActiveInput] = useState(1);
 
   const firstweeloption = [
@@ -453,32 +454,48 @@ const MyComponent = () => {
   }, []);
 
   useEffect(() => {
+    console.log(selectedIndex);
     valide();
-  }, [input1Text,selectShap , selectD,selectparoty,selectedIndex]);
+  }, [input1Text, selectShap, selectD, selectparoty, selectedIndex]);
 
   useEffect(() => {
     pricefunction();
   }, [selectedIndex, input2Text]);
-useEffect(()=> {
-priceCtEdit()
-},[input3Text])
-const priceCtEdit = () =>{
- 
 
-  const price = input4Text / input1Text;
-// console.log(price);
-//     setInput4Text(price)
-    // ct-price, total price, discount
-}
+  useEffect(() => {
+    priceCtEdit()
+  }, [input3Text])
+
+  const priceCtEdit = () => {
+    if (activeInput == 3) {
+      let TotalPrice = input3Text * input1Text;
+      TotalPrice = TotalPrice.toFixed(2)
+      setInput4Text(TotalPrice)
+    }
+  }
+
+  useEffect(() => {
+    totalPriceEdit()
+  }, [input4Text])
+
+  const totalPriceEdit = () => {
+    if (activeInput == 4) {
+      let tcPrice = input4Text / input1Text;
+      tcPrice = tcPrice.toFixed(2)
+      setInput3Text(tcPrice)
+    }
+
+  }
+
   const pricefunction = () => {
     const percentage =
       parseFloat(fourthweeloption[selectedIndex].replace('%', '')) / 100;
 
 
-      // ct-price  , total price , discount
-// 1) edit ct-price       => dis , () totale price (carate * ct-price)
-// 2)  edit total price   => dis , tc-price (totale price  / carate)
-// 3 
+    // ct-price  , total price , discount
+    // 1) edit ct-price       => dis , () totale price (carate * ct-price)
+    // 2)  edit total price   => dis , tc-price (totale price  / carate)
+    // 3 
 
 
 
@@ -507,6 +524,13 @@ const priceCtEdit = () =>{
     setselectparoty(0);
     setSelectedIndex(0);
     setLessPr(0);
+    setInput1Text(0);
+    setInput1Text(0);
+    setInput2Text(0);
+    setInput3Text(0);
+    setInput4Text(0);
+    setActiveInput(1);
+
   };
   const getDatadfromapi = () => {
     fetch(
@@ -524,18 +548,18 @@ const priceCtEdit = () =>{
   };
   const valide = () => {
     // console.log(data, '==first5datra');
-     const enteredValue = parseFloat(input1Text);
+    const enteredValue = parseFloat(input1Text);
     const filtered = data.find(subArray => {
 
       return (
         subArray[0] == firstweeloption[selectShap] &&
         subArray[1] == thirdweeloption[selectparoty] &&
         subArray[2] == secondweeloption[selectD] &&
-        enteredValue >= subArray[3] && 
+        enteredValue >= subArray[3] &&
         enteredValue <= subArray[4]
       );
     });
-    console.log(filtered, '======');
+    console.log(filtered, '==');
     {
       /* 
       PS	IF   	D	0.18	0.22	1370	10/6/2023
@@ -544,13 +568,13 @@ const priceCtEdit = () =>{
       PS	VVS2	L	0.23	0.29	940	10/6/2023	
       PS	VS1	L	0.23	0.29	810	10/6/2023	        
       */
-            }
-            // console.log(subArray[1]);
-    // console.log(firstweeloption[selectShap], '======');
-    // console.log(secondweeloption[selectD], '======');
-    // console.log(thirdweeloption[selectparoty], '======');
-    // console.log(input1Text, '======');
-    // console.log(filtered[5], '======');
+    }
+    // console.log(subArray[1]);
+    // console.log(firstweeloption[selectShap], '==');
+    // console.log(secondweeloption[selectD], '==');
+    // console.log(thirdweeloption[selectparoty], '==');
+    // console.log(input1Text, '==');
+    // console.log(filtered[5], '==');
     if (filtered != undefined && filtered != null) {
       setInput2Text(filtered[5]);
     }
@@ -558,25 +582,25 @@ const priceCtEdit = () =>{
 
   const handleButtonPress = text => {
     if (text == 'clear') {
-      if (activeInput === 1) {
+      if (activeInput == 1) {
         setInput1Text(input1Text.slice(0, -1));
-      } else if (activeInput === 2) {
+      } else if (activeInput == 2) {
         setInput2Text(input2Text.slice(0, -1));
-      } else if (activeInput === 3) {
+      } else if (activeInput == 3) {
         console.log('text =>', text);
         setInput3Text(input3Text.slice(0, -1));
-      } else if (activeInput === 4) {
+      } else if (activeInput == 4) {
         setInput4Text(input4Text.slice(0, -1));
       }
     } else {
-      if (activeInput === 1) {
+      if (activeInput == 1) {
         setInput1Text(input1Text + text);
-      } else if (activeInput === 2) {
+      } else if (activeInput == 2) {
         setInput2Text(input2Text + text);
-      } else if (activeInput === 3) {
+      } else if (activeInput == 3) {
         console.log('text =>', text);
         setInput3Text(input3Text + text);
-      } else if (activeInput === 4) {
+      } else if (activeInput == 4) {
         setInput4Text(input4Text + text);
       }
     }
@@ -584,9 +608,9 @@ const priceCtEdit = () =>{
 
   return (
     // <ScrollView style={{paddingBottom:100}}>
-    <View style={{flexDirection: 'column', height: '100%', width: '100%'}}>
-      <View style={{height: '50%'}}>
-        <View style={{flexDirection: 'row'}}>
+    <View style={{ flexDirection: 'column', height: '100%', width: '100%' }}>
+      <View style={{ height: '50%' }}>
+        <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity
             onPress={() => {
               setActiveInput(1);
@@ -601,6 +625,7 @@ const priceCtEdit = () =>{
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
+            disabled={true}
             onPress={() => {
               setActiveInput(2);
             }}
@@ -614,7 +639,7 @@ const priceCtEdit = () =>{
             </Text>
           </TouchableOpacity>
         </View>
-        <View style={{flexDirection: 'row'}}>
+        <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity
             onPress={() => {
               setActiveInput(3);
@@ -644,30 +669,34 @@ const priceCtEdit = () =>{
           style={{
             flexDirection: 'row',
             marginHorizontal: wp(1),
-            backgroundColor: '#89b3e5',
+            backgroundColor: manycolors.blue,
             borderRadius: wp(3),
             height: '50%',
           }}>
           <WheelPicker
-            containerStyle={{width: '20%', marginHorizontal: wp(1), flex: 1}}
+            containerStyle={{ width: '20%', marginHorizontal: wp(1), flex: 1 }}
             selectedIndex={selectShap}
             options={firstweeloption}
             onChange={index => setselectShap(index)}
           />
           <WheelPicker
-            containerStyle={{width: '20%', marginHorizontal: wp(1), flex: 1}}
+            containerProps
+            containerStyle={{ width: '20%', marginHorizontal: wp(1), flex: 1 }}
             selectedIndex={selectD}
             options={secondweeloption}
             onChange={index => setselectD(index)}
           />
           <WheelPicker
             selectedIndex={selectparoty}
-            containerStyle={{width: '20%', marginHorizontal: wp(1), flex: 1}}
+            itemStyle={{ color: manycolors.white }}
+            // itemTextStyle={{ color: manycolors.white }}
+            selectedIndicatorStyle={{ color: manycolors.black }}
+            containerStyle={{ width: '20%', marginHorizontal: wp(1), flex: 1, color: manycolors.white }}
             options={thirdweeloption}
             onChange={index => setselectparoty(index)}
           />
           <WheelPicker
-            containerStyle={{width: '20%', marginHorizontal: wp(1), flex: 1}}
+            containerStyle={{ width: '20%', marginHorizontal: wp(1), flex: 1 }}
             selectedIndex={selectedIndex}
             options={fourthweeloption}
             onChange={index => setSelectedIndex(index)}
@@ -675,8 +704,8 @@ const priceCtEdit = () =>{
         </View>
       </View>
 
-      <View style={{height: '35%', flexDirection: 'row'}}>
-        <View style={{flex: 1}}>
+      <View style={{ height: '35%', flexDirection: 'row' }}>
+        <View style={{ flex: 1 }}>
           <TouchableOpacity
             onPress={() => handleButtonPress('7')}
             style={styles.bluebuttons}>
@@ -698,7 +727,7 @@ const priceCtEdit = () =>{
             <Text style={styles.bluebuttontext}>0</Text>
           </TouchableOpacity>
         </View>
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           <TouchableOpacity
             onPress={() => handleButtonPress('8')}
             style={styles.bluebuttons}>
@@ -720,7 +749,7 @@ const priceCtEdit = () =>{
             <Text style={styles.bluebuttontext}>.</Text>
           </TouchableOpacity>
         </View>
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           <TouchableOpacity
             onPress={() => handleButtonPress('9')}
             style={styles.bluebuttons}>
@@ -743,7 +772,7 @@ const priceCtEdit = () =>{
           </TouchableOpacity>
         </View>
 
-        <View style={{flex: 1.3}}>
+        <View style={{ flex: 1.3 }}>
           <TouchableOpacity style={styles.orangebutton}>
             <Text style={styles.brownText}>save</Text>
           </TouchableOpacity>
@@ -759,23 +788,23 @@ const priceCtEdit = () =>{
             <Text style={styles.brownText}>Clear</Text>
           </TouchableOpacity>
         </View>
-        <View style={{flex: 1.3}}>
-          <View style={{flex: 1, justifyContent: 'space-between'}}>
+        <View style={{ flex: 1.3 }}>
+          <View style={{ flex: 1, justifyContent: 'space-between' }}>
             <View style={styles.percetageContainer}>
-              <View style={{backgroundColor: 'sky'}}>
-                <Text style={{textAlign: 'center', color: '#'}}>Less</Text>
+              <View style={{ backgroundColor: 'sky' }}>
+                <Text style={{ textAlign: 'center', color: manycolors.black }}>Less</Text>
               </View>
               <WheelPicker
-                style={{backgroundColor: 'red', color: '#1e7fcd'}}
+                style={{ backgroundColor: 'red', color: manycolors.blue }}
                 selectedIndex={lessPr}
                 // containerStyle={styles.prweelcontainer}
                 selectedIndicatorStyle={{
-                  color: '#fff',
+                  color: manycolors.white,
                   fontSize: wp(3),
-                  backgroundColor: '#2083c6',
+                  backgroundColor: manycolors.blue,
                 }}
-                selectedTextStyle={{color: '#fff'}}
-                itemTextStyle={{color: '#000'}}
+                selectedTextStyle={{ color: manycolors.white }}
+                itemTextStyle={{ color: 'manycolors.black' }}
                 options={percetageoption}
                 onChange={index => setLessPr(index)}
               />
@@ -787,16 +816,16 @@ const priceCtEdit = () =>{
         </View>
       </View>
 
-      <View style={{flex: 1, backgroundColor: '#fff'}}>
-        <View style={{backgroundColor: '#dca588', flex: 1}}></View>
-        <View style={{backgroundColor: 'white', flex: 1}}>
+      <View style={{ flex: 1, backgroundColor: manycolors.white }}>
+        <View style={{ backgroundColor: manycolors.chocalate, flex: 1 }}></View>
+        <View style={{ backgroundColor: 'white', flex: 1 }}>
           <TouchableOpacity
-            style={{padding: 4, backgroundColor: 'yellow'}}
+            style={{ padding: 4, backgroundColor: 'yellow' }}
             onPress={() => getDatadfromapi()}>
             <Text>click for csv</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={{padding: 4, backgroundColor: 'red'}}
+            style={{ padding: 4, backgroundColor: 'red' }}
             onPress={() => valide()}>
             <Text>click for result</Text>
           </TouchableOpacity>
@@ -809,10 +838,10 @@ const priceCtEdit = () =>{
 
 export default MyComponent;
 const styles = StyleSheet.create({
-  containerTitel: {fontWeight: 'bold', fontSize: wp(4)},
-  brownText: {flex: 1, textAlignVertical: 'center', color: '#fff'},
+  containerTitel: { fontWeight: 'bold', fontSize: wp(4) },
+  brownText: { flex: 1, textAlignVertical: 'center', color: manycolors.white },
   prweelcontainer: {
-    backgroundColor: '#fff',
+    backgroundColor: manycolors.white,
     margin: wp(1),
     flex: 1,
   },
@@ -830,19 +859,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     margin: wp(1),
     borderRadius: 4,
-    borderColor: '#2083c6',
+    borderColor: manycolors.blue,
     borderWidth: 2,
   },
   percetageContainer: {
     flex: 1,
     borderRadius: 6,
-    borderColor: '#1e7fcd',
+    borderColor: manycolors.blue,
     borderWidth: 2,
     margin: wp(1),
   },
 
   brownbutton: {
-    backgroundColor: '#7f5329',
+    backgroundColor: manycolors.brown,
     alignItems: 'center',
     borderRadius: 4,
     margin: wp(1),
@@ -850,7 +879,7 @@ const styles = StyleSheet.create({
   },
 
   orangebutton: {
-    backgroundColor: '#f2aa66',
+    backgroundColor: manycolors.liteorange,
     alignItems: 'center',
     borderRadius: 4,
     margin: wp(1),
@@ -859,30 +888,30 @@ const styles = StyleSheet.create({
   bluebuttontext: {
     flex: 1,
     textAlignVertical: 'center',
-    color: '#fff',
+    color: manycolors.white,
     fontWeight: 'bold',
     fontSize: hp(3),
   },
   bluebuttons: {
-    backgroundColor: '#2083c6',
+    backgroundColor: manycolors.blue,
     alignItems: 'center',
     borderRadius: 4,
     margin: wp(1),
     flex: 1,
   },
-  activeInput: {borderColor: 'red'},
+  activeInput: { borderColor: 'red' },
   valueContrainer: {
     margin: wp(2),
-    borderColor: 'blue',
+    borderColor: manycolors.blue,
     borderWidth: 2,
-    backgroundColor: '#fff',
+    backgroundColor: manycolors.white,
     borderRadius: wp(3),
     padding: wp(2.5),
     flex: 1,
   },
   valueText: {
     fontWeight: 'bold',
-    color: '#000',
+    color: 'manycolors.black',
     fontSize: wp(5),
     textAlignVertical: 'center',
   },
@@ -892,7 +921,7 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     height: 50,
-    borderColor: 'gray',
+    borderColor: manycolors.gray,
     borderWidth: 0.5,
     borderRadius: 8,
     paddingHorizontal: 8,
