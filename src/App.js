@@ -1,29 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import WheelPicker from 'react-native-wheely';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import manycolors from './Utils/manycolors';
+import manycolors from '../Utils/manycolors';
+import {setReport, updateAllReport} from '../Redux/Slice/reportSlice';
+import {useDispatch, useSelector} from 'react-redux';
+import {useIsFocused} from '@react-navigation/native';
+import {nanoid} from '@reduxjs/toolkit';
+import {
+  fetchDataFromApi,
+  setCurrentData,
+} from '../Redux/Slice/CurrentdataSlice';
 
-const MyComponent = () => {
+const App = () => {
   // weel selected items
-  const [selectShap, setselectShap] = useState(0);
-  const [selectD, setselectD] = useState(0);
-  const [selectparoty, setselectparoty] = useState(0);
-  const [selectedIndex, setSelectedIndex] = useState(134);
-  const [lessPr, setLessPr] = useState(0);
+  const isFocused = useIsFocused();
+  dispatch = useDispatch();
+  const {
 
+    shap,
+    colour,
+    clarity,
+    percentage,
+    lessPercentage,
+    finalPrice,
+    carat,
+    rapePrice,
+    pricePercarate,
+    total,
+    activeInput,
+    recutSton,
+  } = useSelector(state => state.currentData);
   const [data, setData] = React.useState([]);
-
-  const [input1Text, setInput1Text] = useState(0);
-  const [input2Text, setInput2Text] = useState(0);
-  const [input3Text, setInput3Text] = useState(0);
-  const [input4Text, setInput4Text] = useState(0);
-  const [activeInput, setActiveInput] = useState(1);
-
   const firstweeloption = [
     'BR',
     'PS',
@@ -40,6 +52,7 @@ const MyComponent = () => {
     'OTH',
   ];
   const secondweeloption = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+
   const thirdweeloption = [
     'IF',
     'VVS1',
@@ -450,116 +463,181 @@ const MyComponent = () => {
   ];
 
   useEffect(() => {
-    getData();
+    console.log(shap, '===shape');
+    getitems();
   }, []);
 
-  useEffect(() => {
-    console.log(selectedIndex);
-    valide();
-  }, [input1Text, selectShap, selectD, selectparoty, selectedIndex]);
+  useEffect(()=> {
 
-  useEffect(() => {
-    pricefunction();
-  }, [selectedIndex, input2Text]);
-
-  useEffect(() => {
-    priceCtEdit()
-  }, [input3Text])
-
-  const priceCtEdit = () => {
-    if (activeInput == 3) {
-      let TotalPrice = input3Text * input1Text;
-      TotalPrice = TotalPrice.toFixed(2)
-      setInput4Text(TotalPrice)
+    if(isFocused){
+      console.log(data, "====dataaaaaaaaa===");
     }
-  }
+  },[isFocused])
+
+  const updateData = (key, value) => {
+    dispatch(setCurrentData({[key]: value}));
+  };
+
+  const getitems = async () => {
+    const data = await AsyncStorage.getItem('Reportdata');
+    dispatch(updateAllReport(JSON.parse(data)));
+  };
 
   useEffect(() => {
-    totalPriceEdit()
-  }, [input4Text])
+    getDatadfromapi()
 
-  const totalPriceEdit = () => {
-    if (activeInput == 4) {
-      let tcPrice = input4Text / input1Text;
-      tcPrice = tcPrice.toFixed(2)
-      setInput3Text(tcPrice)
-    }
-
-  }
-
-  const pricefunction = () => {
-    const percentage =
-      parseFloat(fourthweeloption[selectedIndex].replace('%', '')) / 100;
-
-
-    // ct-price  , total price , discount
-    // 1) edit ct-price       => dis , () totale price (carate * ct-price)
-    // 2)  edit total price   => dis , tc-price (totale price  / carate)
-    // 3 
-
-
-
-    // Step 2: Ensure input2Text is a number (parse if necessary)
-    const inputNumber = parseFloat(input2Text);
-    console.log(inputNumber, '  ', percentage);
-    // Step 3: Perform the calculation
-    let result = inputNumber + inputNumber * percentage;
-    result = result.toFixed(2);
-    setInput3Text(result);
-    let totalPrice = result * input1Text;
-    totalPrice = totalPrice.toFixed(2);
-    setInput4Text(totalPrice);
-    console.log('price/ct => ', result, '   ', 'totalprice => ', totalPrice);
-  };
-
-  const getData = async () => {
-    const sss = await AsyncStorage.getItem('csv_file');
-    setData(JSON.parse(sss));
-    console.log(sss, '==here data');
-  };
-
-  const clearAlldata = () => {
-    setselectShap(0);
-    setselectD(0);
-    setselectparoty(0);
-    setSelectedIndex(0);
-    setLessPr(0);
-    setInput1Text(0);
-    setInput1Text(0);
-    setInput2Text(0);
-    setInput3Text(0);
-    setInput4Text(0);
-    setActiveInput(1);
-
-  };
+  }, []);
   const getDatadfromapi = () => {
     fetch(
       'https://sheets.googleapis.com/v4/spreadsheets/1bj-pip1LO8PRWcS7ZLDCenJ28GkQ3uFbugds059K9_Q/values/sheet_dimond?valueRenderOption=FORMATTED_VALUE&key=AIzaSyBphS8vaXHgqwTHbl0jaIFudSahl2DjQHQ',
     )
       .then(res => res.json())
       .then(res => {
-        console.log(res.values, '==here data');
         AsyncStorage.setItem('csv_file', JSON.stringify(res.values));
         setData(res.values);
       })
-      .catch(err => {
+      .catch(async err => {
+        const sss = await AsyncStorage.getItem('csv_file');
+        setData(JSON.parse(sss));
         console.log(err, '==here data');
       });
   };
-  const valide = () => {
-    // console.log(data, '==first5datra');
-    const enteredValue = parseFloat(input1Text);
-    const filtered = data.find(subArray => {
 
+  useEffect(() => {
+    valide();
+  }, [carat, shap, colour, clarity, percentage]);
+
+  useEffect(() => {
+    pricefunction();
+  }, [percentage, rapePrice]);
+
+  useEffect(() => {
+    priceCtEdit();
+  }, [pricePercarate]);
+
+  const priceCtEdit = () => {
+    if (activeInput == 3) {
+      let TotalPrice = pricePercarate * carat;
+      TotalPrice = TotalPrice.toFixed(2);
+      // setInput4Text(TotalPrice)
+      updateData('total', TotalPrice);
+    }
+  };
+
+  useEffect(() => {
+    totalPriceEdit();
+  }, [total]);
+
+  useEffect(() => {
+    handlefinalprice();
+  }, [lessPercentage]);
+
+  const totalPriceEdit = () => {
+    if (activeInput == 4) {
+      let tcPrice = total / carat;
+      tcPrice = tcPrice.toFixed(2);
+      // setInput3Text(tcPrice)
+      updateData('pricePercarate', tcPrice);
+
+      // DISCOUNT
+      let first = Number(tcPrice) / Number(rapePrice);
+      let second = Number(first) - 1;
+      let three = (second * 100).toFixed(2);
+    }
+
+    handlefinalprice();
+  };
+  const handlefinalprice = () => {
+    let adjustedValue = calculateAdjustedValue(
+      total,
+      percetageoption[lessPercentage],
+    );
+    // setfinal_price(adjustedValue)
+    updateData('finalPrice', adjustedValue);
+  };
+
+  function calculateAdjustedValue(value, percentageStr) {
+    const percentage = parseFloat(percentageStr.replace('%', ''));
+    if (!isNaN(percentage)) {
+      const percentageValue = value * (percentage / 100);
+      const result_final = Number(value) + Number(percentageValue);
+      return result_final?.toFixed(2);
+    } else {
+      console.log('Invalid percentage value:', percentageStr);
+    }
+  }
+
+  const pricefunction = () => {
+    const percentagess =
+      parseFloat(fourthweeloption[percentage].replace('%', '')) / 100;
+
+    // ct-price  , total price , discount
+    // 1) edit ct-price       => dis , () totale price (carate * ct-price)
+    // 2)  edit total price   => dis , tc-price (totale price  / carate)
+    // 3
+
+    // Step 2: Ensure rapePrice is a number (parse if necessary)
+    const inputNumber = parseFloat(rapePrice);
+
+    // Step 3: Perform the calculation
+    let result = inputNumber + inputNumber * percentagess;
+    result = result.toFixed(2);
+    // setInput3Text(result);
+    updateData('pricePercarate', result);
+    let totalPrice = result * carat;
+    totalPrice = totalPrice.toFixed(2);
+    // setInput4Text(totalPrice);
+    updateData("total",totalPrice);
+
+  };
+
+  const clearAlldata = () => {
+    updateData('shap', 0)
+    updateData('colour', 0)
+    updateData('clarity', 0)
+    updateData('percentage', 134)
+    updateData('lessPercentage', 0)
+    updateData('finalPrice', 0)
+    updateData('carat', 0)
+    updateData('rapePrice', 0)
+    updateData('pricePercarate', 0)
+    updateData('total', 0)
+    updateData('activeInput', 0)
+
+
+    // setselectShap(0);
+    // setselectD(0);
+    // setclarity(0);
+    // setSelectedIndex(0);
+    // setLessPr(0);
+    // setInput1Text(0);
+    // setInput1Text(0);
+    // setInput2Text(0);
+    // setInput3Text(0);
+    // setInput4Text(0);
+    // setActiveInput(1);
+
+  };
+
+  
+
+  const valide = () => {
+    const enteredValue = parseFloat(carat);
+
+    console.log(enteredValue, '========flot');
+
+    console.log(shap, ' ', clarity, ' ', colour, ' ', enteredValue);
+
+    const filtered = data?.find(subArray => {
       return (
-        subArray[0] == firstweeloption[selectShap] &&
-        subArray[1] == thirdweeloption[selectparoty] &&
-        subArray[2] == secondweeloption[selectD] &&
+        subArray[0] == firstweeloption[shap] &&
+        subArray[1] == thirdweeloption[clarity] &&
+        subArray[2] == secondweeloption[colour] &&
         enteredValue >= subArray[3] &&
         enteredValue <= subArray[4]
       );
     });
-    console.log(filtered, '==');
+
     {
       /* 
       PS	IF   	D	0.18	0.22	1370	10/6/2023
@@ -571,98 +649,140 @@ const MyComponent = () => {
     }
     // console.log(subArray[1]);
     // console.log(firstweeloption[selectShap], '==');
-    // console.log(secondweeloption[selectD], '==');
-    // console.log(thirdweeloption[selectparoty], '==');
-    // console.log(input1Text, '==');
+    // console.log(secondweeloption[colour], '==');
+    // console.log(thirdweeloption[clarity], '==');
+    // console.log(carat, '==');
     // console.log(filtered[5], '==');
     if (filtered != undefined && filtered != null) {
-      setInput2Text(filtered[5]);
+      // setInput2Text(filtered[5]);
+      updateData('rapePrice', filtered[5]);
     }
   };
 
   const handleButtonPress = text => {
     if (text == 'clear') {
       if (activeInput == 1) {
-        setInput1Text(input1Text.slice(0, -1));
+        // setInput1Text(carat.slice(0, -1));
+        updateData('carat', carat.slice(0, -1));
       } else if (activeInput == 2) {
-        setInput2Text(input2Text.slice(0, -1));
+        // setInput2Text(rapePrice.slice(0, -1));
+        updateData('rapePrice', rapePrice.slice(0, -1));
       } else if (activeInput == 3) {
-        console.log('text =>', text);
-        setInput3Text(input3Text.slice(0, -1));
+        // setInput3Text(pricePercarate.slice(0, -1));
+        updateData('pricePercarate', pricePercarate.slice(0, -1));
       } else if (activeInput == 4) {
-        setInput4Text(input4Text.slice(0, -1));
+        // setInput4Text(total.slice(0, -1));
+        updateData('total', total.slice(0, -1));
       }
     } else {
       if (activeInput == 1) {
-        setInput1Text(input1Text + text);
+        // setInput1Text(carat + text);
+        updateData('carat', carat + text);
       } else if (activeInput == 2) {
-        setInput2Text(input2Text + text);
+        // setInput2Text(rapePrice + text);
+        updateData('rapePrice', rapePrice + text);
       } else if (activeInput == 3) {
-        console.log('text =>', text);
-        setInput3Text(input3Text + text);
+        // setInput3Text(pricePercarate + text);
+        updateData('pricePercarate', pricePercarate + text);
       } else if (activeInput == 4) {
-        setInput4Text(input4Text + text);
+        // setInput4Text(total + text);
+        updateData('total', total + text);
       }
     }
   };
 
+  const handleSave = () => {
+    const StonData = {
+      id: nanoid(),
+      carat: carat,
+      rapePrice: rapePrice,
+      caratePrice: pricePercarate,
+      total: total,
+      finalPrice: finalPrice,
+      shape: firstweeloption[shap],
+      colour: secondweeloption[colour],
+      clarity: thirdweeloption[clarity],
+      percetage: fourthweeloption[percentage],
+      lessdiscount: percetageoption[lessPercentage],
+    };
+    console.log(StonData, '=====ston data');
+    dispatch(setReport(StonData));
+  };
+  const handlerecut = () => {
+    const dataForRecut = {
+      recutcarat: carat,
+      recutrapePrice: rapePrice,
+      recutcaratePrice: pricePercarate,
+      recuttotal: total,
+      recutfinalPrice: finalPrice,
+    };
+
+    updateData('recutSton', dataForRecut);
+    // setsaveArecut()
+  };
+
   return (
-    // <ScrollView style={{paddingBottom:100}}>
-    <View style={{ flexDirection: 'column', height: '100%', width: '100%' }}>
-      <View style={{ height: '50%' }}>
-        <View style={{ flexDirection: 'row' }}>
+    <View style={{flexDirection: 'column', height: '100%', width: '100%'}}>
+      <View
+        style={{height: '50%', alignItems: 'center', justifyContent: 'center'}}>
+        <View style={{flexDirection: 'row'}}>
           <TouchableOpacity
             onPress={() => {
-              setActiveInput(1);
+              // setActiveInput(1);
+              updateData('activeInput', 1);
             }}
             style={[
               styles.valueContrainer,
               activeInput == 1 ? styles.activeInput : null,
             ]}>
             <Text style={styles.containerTitel}>carat</Text>
-            <Text value={input1Text} style={styles.valueText}>
-              {input1Text}
+            <Text value={carat} style={styles.valueText}>
+              {carat}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             disabled={true}
             onPress={() => {
-              setActiveInput(2);
+              // setActiveInput(2);
+              updateData('activeInput', 2);
             }}
             style={[
               styles.valueContrainer,
               activeInput == 2 ? styles.activeInput : null,
             ]}>
             <Text style={styles.containerTitel}>Rape Price/CT.</Text>
-            <Text value={input3Text} style={styles.valueText}>
-              {input2Text}
+            <Text value={pricePercarate} style={styles.valueText}>
+              {rapePrice}
             </Text>
           </TouchableOpacity>
         </View>
-        <View style={{ flexDirection: 'row' }}>
+        <View style={{flexDirection: 'row'}}>
           <TouchableOpacity
             onPress={() => {
-              setActiveInput(3);
+              updateData('activeInput', 3);
+              // setActiveInput(3);
             }}
             style={[
               styles.valueContrainer,
               activeInput == 3 ? styles.activeInput : null,
             ]}>
             <Text style={styles.containerTitel}>Price/CT.</Text>
-            <Text value={input3Text} style={styles.valueText}>
-              {input3Text}
+            <Text value={pricePercarate} style={styles.valueText}>
+              {pricePercarate}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              setActiveInput(4);
+              updateData('activeInput', 4);
+
+              // setActiveInput(4);
             }}
             style={[
               styles.valueContrainer,
               activeInput == 4 ? styles.activeInput : null,
             ]}>
             <Text style={styles.containerTitel}>Total</Text>
-            <Text style={styles.valueText}>{input4Text}</Text>
+            <Text style={styles.valueText}>{total}</Text>
           </TouchableOpacity>
         </View>
         <View
@@ -674,38 +794,47 @@ const MyComponent = () => {
             height: '50%',
           }}>
           <WheelPicker
-            containerStyle={{ width: '20%', marginHorizontal: wp(1), flex: 1 }}
-            selectedIndex={selectShap}
+            containerStyle={{width: '20%', marginHorizontal: wp(1), flex: 1}}
+            selectedIndex={shap}
             options={firstweeloption}
-            onChange={index => setselectShap(index)}
+            onChange={index => updateData('shap', index)}
+            // onChange={index => setselectShap(index)}
           />
           <WheelPicker
             containerProps
-            containerStyle={{ width: '20%', marginHorizontal: wp(1), flex: 1 }}
-            selectedIndex={selectD}
+            containerStyle={{width: '20%', marginHorizontal: wp(1), flex: 1}}
+            selectedIndex={colour}
             options={secondweeloption}
-            onChange={index => setselectD(index)}
+            onChange={index => updateData('colour', index)}
+            // onChange={index => setselectD(index)}
           />
           <WheelPicker
-            selectedIndex={selectparoty}
-            itemStyle={{ color: manycolors.white }}
+            selectedIndex={clarity}
+            itemStyle={{color: manycolors.white}}
             // itemTextStyle={{ color: manycolors.white }}
-            selectedIndicatorStyle={{ color: manycolors.black }}
-            containerStyle={{ width: '20%', marginHorizontal: wp(1), flex: 1, color: manycolors.white }}
+            selectedIndicatorStyle={{color: manycolors.black}}
+            containerStyle={{
+              width: '20%',
+              marginHorizontal: wp(1),
+              flex: 1,
+              color: manycolors.white,
+            }}
             options={thirdweeloption}
-            onChange={index => setselectparoty(index)}
+            // onChange={index => setselectparoty(index)}
+            onChange={index => updateData('clarity', index)}
           />
           <WheelPicker
-            containerStyle={{ width: '20%', marginHorizontal: wp(1), flex: 1 }}
-            selectedIndex={selectedIndex}
+            containerStyle={{width: '20%', marginHorizontal: wp(1), flex: 1}}
+            selectedIndex={percentage}
             options={fourthweeloption}
-            onChange={index => setSelectedIndex(index)}
+            // onChange={index => setSelectedIndex(index)}
+            onChange={index => updateData('percentage', index)}
           />
         </View>
       </View>
 
-      <View style={{ height: '35%', flexDirection: 'row' }}>
-        <View style={{ flex: 1 }}>
+      <View style={{height: '40%', flexDirection: 'row'}}>
+        <View style={{flex: 1}}>
           <TouchableOpacity
             onPress={() => handleButtonPress('7')}
             style={styles.bluebuttons}>
@@ -727,7 +856,7 @@ const MyComponent = () => {
             <Text style={styles.bluebuttontext}>0</Text>
           </TouchableOpacity>
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{flex: 1}}>
           <TouchableOpacity
             onPress={() => handleButtonPress('8')}
             style={styles.bluebuttons}>
@@ -749,7 +878,7 @@ const MyComponent = () => {
             <Text style={styles.bluebuttontext}>.</Text>
           </TouchableOpacity>
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{flex: 1}}>
           <TouchableOpacity
             onPress={() => handleButtonPress('9')}
             style={styles.bluebuttons}>
@@ -772,14 +901,16 @@ const MyComponent = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={{ flex: 1.3 }}>
-          <TouchableOpacity style={styles.orangebutton}>
+        <View style={{flex: 1.3}}>
+          <TouchableOpacity onPress={handleSave} style={styles.orangebutton}>
             <Text style={styles.brownText}>save</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.brownbutton}>
             <Text style={styles.brownText}>M+</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.brownbutton}>
+          <TouchableOpacity
+            onPress={() => handlerecut()}
+            style={styles.brownbutton}>
             <Text style={styles.brownText}>Recut</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -788,68 +919,118 @@ const MyComponent = () => {
             <Text style={styles.brownText}>Clear</Text>
           </TouchableOpacity>
         </View>
-        <View style={{ flex: 1.3 }}>
-          <View style={{ flex: 1, justifyContent: 'space-between' }}>
-            <View style={styles.percetageContainer}>
-              <View style={{ backgroundColor: 'sky' }}>
-                <Text style={{ textAlign: 'center', color: manycolors.black }}>Less</Text>
-              </View>
-              <WheelPicker
-                style={{ backgroundColor: 'red', color: manycolors.blue }}
-                selectedIndex={lessPr}
-                // containerStyle={styles.prweelcontainer}
-                selectedIndicatorStyle={{
-                  color: manycolors.white,
-                  fontSize: wp(3),
-                  backgroundColor: manycolors.blue,
-                }}
-                selectedTextStyle={{ color: manycolors.white }}
-                itemTextStyle={{ color: 'manycolors.black' }}
-                options={percetageoption}
-                onChange={index => setLessPr(index)}
-              />
-            </View>
-            <View style={styles.finalpriceContainer}>
-              <Text style={styles.finalpriceText}>Final Price</Text>
-            </View>
+        <View style={{flex: 1.3}}>
+          <WheelPicker
+            selectedIndex={lessPercentage}
+            containerStyle={styles.prweelcontainer}
+            selectedIndicatorStyle={{
+              backgroundColor: manycolors.blue,
+              marginTop: hp(1),
+            }}
+            selectedTextStyle={{color: manycolors.white}}
+            itemTextStyle={{color: manycolors.black}}
+            options={percetageoption}
+            // onChange={index => setLessPr(index)} />
+            onChange={index => updateData('lessPercentage', index)}
+          />
+
+          <View
+            style={{
+              backgroundColor: 'sky',
+              backgroundColor: manycolors.blue,
+              borderRadius: 4,
+              margin: wp(1),
+              position: 'absolute',
+              padding: 4,
+              flex: 1,
+              width: '90%',
+            }}>
+            <Text
+              style={{
+                textAlign: 'center',
+                color: manycolors.white,
+                fontWeight: 'bold',
+              }}>
+              Less
+            </Text>
+          </View>
+
+          <View style={styles.finalpriceContainer}>
+            <Text style={styles.finalpriceText}>Final Price</Text>
+            <Text style={styles.finalprice}>{finalPrice}</Text>
           </View>
         </View>
       </View>
 
-      <View style={{ flex: 1, backgroundColor: manycolors.white }}>
-        <View style={{ backgroundColor: manycolors.chocalate, flex: 1 }}></View>
-        <View style={{ backgroundColor: 'white', flex: 1 }}>
-          <TouchableOpacity
-            style={{ padding: 4, backgroundColor: 'yellow' }}
-            onPress={() => getDatadfromapi()}>
-            <Text>click for csv</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{ padding: 4, backgroundColor: 'red' }}
-            onPress={() => valide()}>
-            <Text>click for result</Text>
-          </TouchableOpacity>
+      <View style={{flex: 1, backgroundColor: manycolors.white}}>
+        <View
+          style={{
+            flex: 1,
+            margin: wp(1),
+            borderRadius: 4,
+            flexDirection: 'row',
+          }}>
+          <View style={styles.recutbox}>
+            <Text style={styles.recutTextTitel}>Total A</Text>
+            <Text style={styles.recutText}>{recutSton?.recuttotal}</Text>
+          </View>
+          <View style={styles.recutbox}>
+            <Text style={styles.recutTextTitel}>Total B</Text>
+            <Text style={styles.recutText}>{total}</Text>
+          </View>
+          <View style={styles.recutbox}>
+            <Text style={styles.recutTextTitel}>Diff</Text>
+            <Text style={styles.recutText}>
+              {(Number(total) - Number(recutSton?.recuttotal)).toFixed(2)}
+            </Text>
+          </View>
+          <View style={styles.recutbox}>
+            <Text style={styles.recutTextTitel}>Cost</Text>
+            <Text style={styles.recutText}>Total A</Text>
+          </View>
         </View>
       </View>
     </View>
-    // </ScrollView>
   );
 };
 
-export default MyComponent;
+export default App;
 const styles = StyleSheet.create({
-  containerTitel: { fontWeight: 'bold', fontSize: wp(4) },
-  brownText: { flex: 1, textAlignVertical: 'center', color: manycolors.white },
+  recutbox: {
+    flexDirection: 'column',
+    width: '25%',
+    backgroundColor: manycolors.blue,
+    margin: 1,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recutText: {color: manycolors.white, fontWeight: 'bold'},
+  recutTextTitel: {color: manycolors.white},
+  containerTitel: {fontWeight: 'bold', fontSize: wp(4)},
+  brownText: {flex: 1, textAlignVertical: 'center', color: manycolors.white},
   prweelcontainer: {
     backgroundColor: manycolors.white,
     margin: wp(1),
-    flex: 1,
+    borderRadius: 6,
+    borderColor: manycolors.blue,
+    borderWidth: 2,
+    height: hp(26),
   },
   finalpriceText: {
     textAlign: 'center',
     alignSelf: 'flex-start',
     flex: 1,
     width: '100%',
+    fontSize: wp(3.5),
+  },
+  finalprice: {
+    textAlign: 'center',
+    alignSelf: 'flex-start',
+    flex: 1,
+    width: '100%',
+    color: 'black',
+    fontWeight: 'bold',
   },
   finalpriceContainer: {
     height: '20%',
@@ -899,7 +1080,7 @@ const styles = StyleSheet.create({
     margin: wp(1),
     flex: 1,
   },
-  activeInput: { borderColor: 'red' },
+  activeInput: {borderColor: 'red'},
   valueContrainer: {
     margin: wp(2),
     borderColor: manycolors.blue,
@@ -911,7 +1092,7 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontWeight: 'bold',
-    color: 'manycolors.black',
+    color: manycolors.black,
     fontSize: wp(5),
     textAlignVertical: 'center',
   },
