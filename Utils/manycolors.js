@@ -22,5 +22,6 @@ export const ImagePath = {
     report: require('../Images/report.png'),
     edit: require('../Images/edit.png'),
     delete: require('../Images/trash.png'),
+    share: require('../Images/share.png'),
   
 }

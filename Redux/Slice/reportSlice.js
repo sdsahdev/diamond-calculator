@@ -17,15 +17,22 @@ const reportSlice = createSlice({
                 state.data = action.payload;
             }
         },
-          deleteReportyById: (state, action) => {
+        deleteReportyById: (state, action) => {
               console.log(state.data, "=====data");
-          state.data = state.data.filter(
-            i => i.id !== action.payload,
-          );
+          state.data = state.data.filter(  i => i.checked !== true);
           console.log(state.data, "=====data");
           AsyncStorage.setItem('Reportdata', JSON.stringify(state.data));
         },
+        updateReportById: (state, action) => {
+            const { id, StonData } = action.payload;
+            const index = state.data.findIndex(item => item.id === id);
+            if (index !== -1) {
+                state.data[index] = { ...state.data[index], ...StonData };
+                AsyncStorage.setItem('Reportdata', JSON.stringify(state.data));
+            }
+        },
+        
     }
 })
-export const {setReport, updateAllReport, deleteReportyById} = reportSlice.actions;
+export const {setReport, updateAllReport, deleteReportyById,updateReportById} = reportSlice.actions;
 export default reportSlice.reducer;
